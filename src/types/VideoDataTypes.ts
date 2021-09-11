@@ -1,6 +1,7 @@
 export interface Genre {
   id: number;
   name: string;
+  item: string;
 }
 
 export interface Video {

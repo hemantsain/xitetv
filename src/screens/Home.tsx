@@ -1,18 +1,35 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, FlatList, TextInput, StyleSheet } from 'react-native';
+import SelectBox, { Item } from 'react-native-multi-selectbox-typescript';
+import xorBy from 'lodash.xorby';
 import VideoItemRow from '../components/VideoItemRow';
 import { getVideosData } from '../services/VideoService';
-import { Video } from '../types/VideoDataTypes';
+import { Genre, Video } from '../types/VideoDataTypes';
 import { contains } from '../utils/Utility';
 
 let allVideos: Video[] = [];
+let allGenre: Genre[] = [];
+
 export const Home: React.FC = () => {
   const [videosData, setVideosData] = useState<Video[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedFilters, setSelectedFilters] = useState<Item[]>([]);
+
+  const formatData = (data: Genre[]): Genre[] => {
+    let formattedArray: Genre[] = [];
+    data.map((_item: Genre) => {
+      formattedArray.push({
+        ..._item,
+        item: _item.name,
+      });
+    });
+    return formattedArray;
+  };
 
   const getVideos = useCallback(async () => {
     const result = await getVideosData();
     allVideos = result?.videos;
+    allGenre = formatData(result?.genres);
     setVideosData(result?.videos);
   }, []);
 
@@ -45,6 +62,25 @@ export const Home: React.FC = () => {
     );
   };
 
+  const onMultiChange = (item: Item) => {
+    return setSelectedFilters(xorBy(selectedFilters, [item], 'id'));
+  };
+
+  const renderFilter = (): JSX.Element => {
+    return (
+      <View style={{ margin: 14 }}>
+        <SelectBox
+          label="Select multiple"
+          options={allGenre}
+          selectedValues={selectedFilters}
+          onMultiSelect={(item: Item) => onMultiChange(item)}
+          onTapClose={(item: Item) => onMultiChange(item)}
+          isMulti
+        />
+      </View>
+    );
+  };
+
   const renderItem = ({ item }: { item: Video }) => {
     return <VideoItemRow item={item} />;
   };
@@ -52,6 +88,7 @@ export const Home: React.FC = () => {
   return (
     <View>
       {renderSearchBar()}
+      {renderFilter()}
       <FlatList
         data={videosData}
         renderItem={renderItem}
