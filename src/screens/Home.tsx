@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, FlatList, TextInput, StyleSheet } from 'react-native';
+import { View, FlatList, TextInput, Text, StyleSheet } from 'react-native';
 import SelectBox, { Item } from 'react-native-multi-selectbox-typescript';
 import xorBy from 'lodash.xorby';
 import VideoItemRow from '../components/VideoItemRow';
 import { getVideosData } from '../services/VideoService';
 import { Genre, Video } from '../types/VideoDataTypes';
-import { contains } from '../utils/Utility';
+import { contains, isTablet } from '../utils/Utility';
 
 let allVideos: Video[] = [];
 let allGenre: Genre[] = [];
@@ -13,7 +13,7 @@ let allGenre: Genre[] = [];
 export const Home: React.FC = () => {
   const [videosData, setVideosData] = useState<Video[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedFilters, setSelectedFilters] = useState<Item[]>([]);
+  const [selectedGenres, setSelectedGenres] = useState<Item[]>([]);
 
   const formatData = (data: Genre[]): Genre[] => {
     let formattedArray: Genre[] = [];
@@ -49,6 +49,25 @@ export const Home: React.FC = () => {
     setSearchQuery(text);
   };
 
+  const handleGenreSearch = useCallback(() => {
+    if (selectedGenres.length > 0) {
+      const data = allVideos.filter(video => {
+        return selectedGenres.some(item => video.genre_id === item.id);
+      });
+      setVideosData(data);
+    } else {
+      setVideosData(allVideos);
+    }
+  }, [selectedGenres]);
+
+  const onMultiChange = (item: Item) => {
+    return setSelectedGenres(xorBy(selectedGenres, [item], 'id'));
+  };
+
+  useEffect(() => {
+    handleGenreSearch();
+  }, [handleGenreSearch]);
+
   const renderSearchBar = (): JSX.Element => {
     return (
       <TextInput
@@ -62,17 +81,13 @@ export const Home: React.FC = () => {
     );
   };
 
-  const onMultiChange = (item: Item) => {
-    return setSelectedFilters(xorBy(selectedFilters, [item], 'id'));
-  };
-
   const renderFilter = (): JSX.Element => {
     return (
       <View style={{ margin: 14 }}>
         <SelectBox
           label="Select multiple"
           options={allGenre}
-          selectedValues={selectedFilters}
+          selectedValues={selectedGenres}
           onMultiSelect={(item: Item) => onMultiChange(item)}
           onTapClose={(item: Item) => onMultiChange(item)}
           isMulti
@@ -85,25 +100,41 @@ export const Home: React.FC = () => {
     return <VideoItemRow item={item} />;
   };
 
+  const renderNoData = () => {
+    return <Text style={styles.titleTextStyle}>No Data Available</Text>;
+  };
+
   return (
-    <View>
+    <View style={styles.rootContainer}>
       {renderSearchBar()}
       {renderFilter()}
-      <FlatList
-        data={videosData}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
-        numColumns={3}
-      />
+      {videosData.length > 0 ? (
+        <FlatList
+          data={videosData}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => index.toString()}
+          numColumns={isTablet() ? 4 : 3}
+        />
+      ) : (
+        renderNoData()
+      )}
     </View>
   );
 };
 const styles = StyleSheet.create({
+  rootContainer: {
+    backgroundColor: '#ffffff',
+  },
   searchContainerStyle: {
     padding: 10,
     borderWidth: 1,
     borderColor: '#000000',
     marginHorizontal: 12,
     color: '#000000',
+  },
+  titleTextStyle: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
