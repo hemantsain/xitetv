@@ -12,6 +12,7 @@ import React from 'react';
 import { SafeAreaView, StatusBar, useColorScheme } from 'react-native';
 
 import { Colors } from 'react-native/Libraries/NewAppScreen';
+import ErrorBoundries from './src/screens/ErrorBoundary';
 import { Home } from './src/screens/Home';
 
 const App = () => {
@@ -22,10 +23,12 @@ const App = () => {
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <Home />
-    </SafeAreaView>
+    <ErrorBoundries>
+      <SafeAreaView style={backgroundStyle}>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        <Home />
+      </SafeAreaView>
+    </ErrorBoundries>
   );
 };
 
