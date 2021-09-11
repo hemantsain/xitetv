@@ -1,4 +1,5 @@
 import { Dimensions, PixelRatio } from 'react-native';
+import { Genre } from '../types/VideoDataTypes';
 
 export const contains = (text: string, query: string): boolean => {
   if (text.toString().toLowerCase().includes(query.toString().toLowerCase())) {
@@ -20,4 +21,15 @@ export const isTablet = () => {
       pixelDensity === 2 && (adjustedWidth >= 1920 || adjustedHeight >= 1920)
     );
   }
+};
+
+export const formatData = (data: Genre[]): Genre[] => {
+  let formattedArray: Genre[] = [];
+  data.map((_item: Genre) => {
+    formattedArray.push({
+      ..._item,
+      item: _item.name,
+    });
+  });
+  return formattedArray;
 };

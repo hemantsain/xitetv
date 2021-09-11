@@ -5,7 +5,7 @@ import xorBy from 'lodash.xorby';
 import VideoItemRow from '../components/VideoItemRow';
 import { getVideosData } from '../services/VideoService';
 import { Genre, Video } from '../types/VideoDataTypes';
-import { contains, isTablet } from '../utils/Utility';
+import { contains, formatData, isTablet } from '../utils/Utility';
 
 let allVideos: Video[] = [];
 let allGenre: Genre[] = [];
@@ -14,17 +14,6 @@ export const Home: React.FC = () => {
   const [videosData, setVideosData] = useState<Video[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedGenres, setSelectedGenres] = useState<Item[]>([]);
-
-  const formatData = (data: Genre[]): Genre[] => {
-    let formattedArray: Genre[] = [];
-    data.map((_item: Genre) => {
-      formattedArray.push({
-        ..._item,
-        item: _item.name,
-      });
-    });
-    return formattedArray;
-  };
 
   const getVideos = useCallback(async () => {
     const result = await getVideosData();
@@ -85,7 +74,7 @@ export const Home: React.FC = () => {
     return (
       <View style={{ margin: 14 }}>
         <SelectBox
-          label="Select multiple"
+          label="Select Genres"
           options={allGenre}
           selectedValues={selectedGenres}
           onMultiSelect={(item: Item) => onMultiChange(item)}
