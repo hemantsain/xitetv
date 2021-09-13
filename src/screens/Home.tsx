@@ -26,21 +26,27 @@ export const Home: React.FC = () => {
     getVideos();
   }, [getVideos]);
 
-  const handleSearch = (text: string) => {
-    if (text.length > 0) {
-      const data = videosData.filter(item => {
-        return contains(item?.artist, text) || contains(item?.title, text);
+  const handleSearch = useCallback(() => {
+    if (searchQuery.length > 0) {
+      const data = allVideos?.filter(item => {
+        return (
+          contains(item?.artist, searchQuery) ||
+          contains(item?.title, searchQuery)
+        );
       });
       setVideosData(data);
     } else {
       setVideosData(allVideos);
     }
-    setSearchQuery(text);
-  };
+  }, [searchQuery]);
+
+  useEffect(() => {
+    handleSearch();
+  }, [handleSearch]);
 
   const handleGenreSearch = useCallback(() => {
     if (selectedGenres.length > 0) {
-      const data = allVideos.filter(video => {
+      const data = allVideos?.filter(video => {
         return selectedGenres.some(item => video.genre_id === item.id);
       });
       setVideosData(data);
@@ -64,7 +70,7 @@ export const Home: React.FC = () => {
         autoCapitalize="none"
         autoCorrect={false}
         value={searchQuery}
-        onChangeText={text => handleSearch(text)}
+        onChangeText={text => setSearchQuery(text)}
         placeholder="Search"
       />
     );
@@ -97,11 +103,11 @@ export const Home: React.FC = () => {
     <View style={styles.rootContainer}>
       {renderSearchBar()}
       {renderFilter()}
-      {videosData.length > 0 ? (
+      {videosData?.length > 0 ? (
         <FlatList
           data={videosData}
           renderItem={renderItem}
-          keyExtractor={(item, index) => index.toString()}
+          keyExtractor={(item: Video) => item.id.toString()}
           numColumns={isTablet() ? 4 : 3}
         />
       ) : (
@@ -120,6 +126,7 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     marginHorizontal: 12,
     color: '#000000',
+    marginTop: 10,
   },
   titleTextStyle: {
     fontSize: 18,
